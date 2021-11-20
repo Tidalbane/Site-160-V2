@@ -1,9 +1,3 @@
--- // Scripted by Bradical
--- // DOOR OPERATOR
-
--- // VARIABLES \\ --
-
-
 local workspace = workspace
 local ServerScriptService = game:GetService('ServerScriptService')
 local ServerStorage = game:GetService('ServerStorage')
@@ -16,8 +10,6 @@ local DoorDeny = ReplicatedStorage.DoorDeny
 
 local WalkThruTime = 5
 
--- // CONSTRUCTORS \\ --
-
 Players.PlayerAdded:Connect(function(PlrAdded)
 	
 	local Clearance = Instance.new("IntValue")
@@ -28,12 +20,11 @@ Players.PlayerAdded:Connect(function(PlrAdded)
 	
 end)
 
--- // FUNCTIONS \\ --
 
 game.ReplicatedStorage.BindableDoor.Event:Connect(function(Player, Door)
 	
 	local DoorSettings = require(Door:WaitForChild('Configuration'))
-	local ClearanceReq = DoorSettings['MinimumClearance'] -- Ignored if ButtonType
+	local ClearanceReq = DoorSettings['MinimumClearance']
 	
 	local PlrClearance = Player:WaitForChild('KeycardClearance').Value
 	
@@ -41,7 +32,7 @@ game.ReplicatedStorage.BindableDoor.Event:Connect(function(Player, Door)
 	local DoorType = DoorSettings['DoorType']
 	local SwingType = DoorSettings['SwingType']
 	
-	if PlrClearance >= ClearanceReq and DoorType == 'Keycard' then -- run if yes, / keycard
+	if PlrClearance >= ClearanceReq and DoorType == 'Keycard' then 
 		
 		--[[
 		Door.Scanner.ProximityPrompt.Enabled = false
@@ -56,26 +47,17 @@ game.ReplicatedStorage.BindableDoor.Event:Connect(function(Player, Door)
 			"DOOR OPENING / SERVER SIDE"
 		)
 		
-		
-		
-		-- lights & text
-		
-		
-		-- sounds
+	
 		
 		Door.Door1.KeycardAccepted:Play()
 		wait(1.1)
 		Remote:FireAllClients(Door, true, OpenTime, DoorType, SwingType, WalkThruTime)
 		Door.Door1.DoorOpen:Play()
-		wait(OpenTime)
-		-- door is opened
 		wait(WalkThruTime)
-		-- ready to close
 		Door.Door1.DoorClose:Play()
 		
 		
 		wait(OpenTime)
-		-- door is closed
 		
 		for _,Model in pairs(Door.Scanners:GetChildren()) do
 			if Model:FindFirstChild('Scanner') then
@@ -83,12 +65,11 @@ game.ReplicatedStorage.BindableDoor.Event:Connect(function(Player, Door)
 			end
 		end
 		
-	elseif PlrClearance < ClearanceReq  and DoorType == 'Keycard' then -- not in limits, keycard
+	elseif PlrClearance < ClearanceReq  and DoorType == 'Keycard' then
 		
 		DoorDeny:FireClient(Player, Door)
 
 	elseif DoorType == 'Button' then
-		--local KeyScanners = Door.KeycardScanners
 		
 		for _,Model in pairs(Door.Scanners:GetChildren()) do
 			if Model:FindFirstChild('Scanner') then
@@ -96,7 +77,6 @@ game.ReplicatedStorage.BindableDoor.Event:Connect(function(Player, Door)
 			end
 		end
 		
-		-- lights & text
 		
 		
 		Door.Door1.KeycardAccepted:Play()
@@ -104,15 +84,11 @@ game.ReplicatedStorage.BindableDoor.Event:Connect(function(Player, Door)
 		Remote:FireAllClients(Door, true, OpenTime, DoorType, SwingType, WalkThruTime)
 		Door.Door1.DoorOpen:Play()
 		wait(OpenTime)
-		-- Door is opened
 		wait(WalkThruTime)
-		-- door closing sequence
 		Door.Door1.DoorClose:Play()
 		
 		wait(OpenTime)
 		
-		-- door is closed
-
 		for _,Model in pairs(Door.Scanners:GetChildren()) do
 			if Model:FindFirstChild('Scanner') then
 				Model.Scanner.ProximityPrompt.Enabled = true
@@ -124,6 +100,3 @@ game.ReplicatedStorage.BindableDoor.Event:Connect(function(Player, Door)
 	
 	
 end)
-
--- // RUN \\ --
-
