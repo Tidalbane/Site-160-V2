@@ -1,0 +1,129 @@
+-- // Scripted by Bradical
+-- // DOOR OPERATOR
+
+-- // VARIABLES \\ --
+
+
+local workspace = workspace
+local ServerScriptService = game:GetService('ServerScriptService')
+local ServerStorage = game:GetService('ServerStorage')
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local Players = game:GetService('Players')
+
+local Bindable = ReplicatedStorage.BindableDoor
+local Remote = ReplicatedStorage.RemoteDoor
+local DoorDeny = ReplicatedStorage.DoorDeny
+
+local WalkThruTime = 5
+
+-- // CONSTRUCTORS \\ --
+
+Players.PlayerAdded:Connect(function(PlrAdded)
+	
+	local Clearance = Instance.new("IntValue")
+	Clearance.Parent = PlrAdded
+	Clearance.Name = 'KeycardClearance'
+	
+	Clearance.Value = 2
+	
+end)
+
+-- // FUNCTIONS \\ --
+
+game.ReplicatedStorage.BindableDoor.Event:Connect(function(Player, Door)
+	
+	local DoorSettings = require(Door:WaitForChild('Configuration'))
+	local ClearanceReq = DoorSettings['MinimumClearance'] -- Ignored if ButtonType
+	
+	local PlrClearance = Player:WaitForChild('KeycardClearance').Value
+	
+	local OpenTime = DoorSettings['OpenTime']
+	local DoorType = DoorSettings['DoorType']
+	local SwingType = DoorSettings['SwingType']
+	
+	if PlrClearance >= ClearanceReq and DoorType == 'Keycard' then -- run if yes, / keycard
+		
+		--[[
+		Door.Scanner.ProximityPrompt.Enabled = false
+		]]
+		
+		for _,Model in pairs(Door.Scanners:GetChildren()) do
+			if Model:FindFirstChild('Scanner') then
+				Model.Scanner.ProximityPrompt.Enabled = false
+			end
+		end
+		print(
+			"DOOR OPENING / SERVER SIDE"
+		)
+		
+		
+		
+		-- lights & text
+		
+		
+		-- sounds
+		
+		Door.Door1.KeycardAccepted:Play()
+		wait(1.1)
+		Remote:FireAllClients(Door, true, OpenTime, DoorType, SwingType, WalkThruTime)
+		Door.Door1.DoorOpen:Play()
+		wait(OpenTime)
+		-- door is opened
+		wait(WalkThruTime)
+		-- ready to close
+		Door.Door1.DoorClose:Play()
+		
+		
+		wait(OpenTime)
+		-- door is closed
+		
+		for _,Model in pairs(Door.Scanners:GetChildren()) do
+			if Model:FindFirstChild('Scanner') then
+				Model.Scanner.ProximityPrompt.Enabled = true
+			end
+		end
+		
+	elseif PlrClearance < ClearanceReq  and DoorType == 'Keycard' then -- not in limits, keycard
+		
+		DoorDeny:FireClient(Player, Door)
+
+	elseif DoorType == 'Button' then
+		--local KeyScanners = Door.KeycardScanners
+		
+		for _,Model in pairs(Door.Scanners:GetChildren()) do
+			if Model:FindFirstChild('Scanner') then
+				Model.Scanner.ProximityPrompt.Enabled = false
+			end
+		end
+		
+		-- lights & text
+		
+		
+		Door.Door1.KeycardAccepted:Play()
+		wait(1.1)
+		Remote:FireAllClients(Door, true, OpenTime, DoorType, SwingType, WalkThruTime)
+		Door.Door1.DoorOpen:Play()
+		wait(OpenTime)
+		-- Door is opened
+		wait(WalkThruTime)
+		-- door closing sequence
+		Door.Door1.DoorClose:Play()
+		
+		wait(OpenTime)
+		
+		-- door is closed
+
+		for _,Model in pairs(Door.Scanners:GetChildren()) do
+			if Model:FindFirstChild('Scanner') then
+				Model.Scanner.ProximityPrompt.Enabled = true
+			end
+		end
+	end
+	
+	
+	
+	
+end)
+
+-- // RUN \\ --
+
